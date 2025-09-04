@@ -11,12 +11,12 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyCompanyAttribute("TekusProvidersAPI")]
+[assembly: System.Reflection.AssemblyCompanyAttribute("InfraLayer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5cd2254e9c1a7aa7fdd6dca99b16e8dc0d980ac7")]
-[assembly: System.Reflection.AssemblyProductAttribute("TekusProvidersAPI")]
-[assembly: System.Reflection.AssemblyTitleAttribute("TekusProvidersAPI")]
+[assembly: System.Reflection.AssemblyProductAttribute("InfraLayer")]
+[assembly: System.Reflection.AssemblyTitleAttribute("InfraLayer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
 
 // Generado por la clase WriteCodeFragment de MSBuild.
