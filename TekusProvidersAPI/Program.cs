@@ -22,6 +22,14 @@ builder.Services.AddDbContextPool<TekusProvidersContext>(options =>
     });
 });
 
+builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
+{
+    builder.WithOrigins("http://localhost:4200")
+           .WithMethods("GET", "POST", "PUT", "DELETE")
+           .WithHeaders("Authorization", "Content-Type")
+           .AllowCredentials();
+}));
+
 builder.Services.AddHttpClient();
 
 builder.Services.AddControllers();
@@ -35,6 +43,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 

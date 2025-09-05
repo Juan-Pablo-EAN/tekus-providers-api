@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DomainLayer.DTOs
+﻿namespace DomainLayer.DTOs
 {
     public class ProvidersResponse
     {
-        
+        public string Message { get; set; } = string.Empty;
+        public bool Status { get; set; }
     }
 }
