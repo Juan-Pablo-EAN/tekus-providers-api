@@ -1,15 +1,35 @@
+using DomainLayer.DTOs;
+using InfraLayer.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.Configure<CountriesServiceConfig>(builder.Configuration.GetSection("CountriesService"));
+
+builder.Services.AddDbContextPool<TekusProvidersContext>(options =>
+{
+    string connectionString = builder.Configuration.GetConnectionString("DataBase:ConnectionString") ??
+                             builder.Configuration["DataBase:ConnectionString"] ??
+                             throw new InvalidOperationException("Connection string 'DataBase:ConnectionString' not found.");
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.CommandTimeout(60); // Tiempo máximo de espera para comandos SQL (segundos).
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3, // Número máximo de reintentos en caso de fallo.
+            maxRetryDelay: TimeSpan.FromSeconds(10), // Tiempo máximo entre reintentos.
+            errorNumbersToAdd: null
+        );
+    });
+});
+
+builder.Services.AddHttpClient();
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

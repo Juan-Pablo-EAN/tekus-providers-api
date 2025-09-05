@@ -1,0 +1,233 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TekusProvidersAPI",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Countries/SyncCountriesList": {
+      "post": {
+        "tags": [
+          "Countries"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/GetProviders": {
+      "get": {
+        "tags": [
+          "Providers"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Providers"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Providers"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Providers"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Countries": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "isocode": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "flagImage": {
+            "type": "string",
+            "nullable": true
+          },
+          "servicesCountries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServicesCountries"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CustomFields": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idProvider": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fieldName": {
+            "type": "string",
+            "nullable": true
+          },
+          "fieldValue": {
+            "type": "string",
+            "nullable": true
+          },
+          "idProviderNavigation": {
+            "$ref": "#/components/schemas/Providers"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Providers": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nit": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "customFields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomFields"
+            },
+            "nullable": true
+          },
+          "providersServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvidersServices"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProvidersServices": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idProvider": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idService": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idProviderNavigation": {
+            "$ref": "#/components/schemas/Providers"
+          },
+          "idServiceNavigation": {
+            "$ref": "#/components/schemas/Services"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Services": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "valuePerHourUsd": {
+            "type": "string",
+            "nullable": true
+          },
+          "providersServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProvidersServices"
+            },
+            "nullable": true
+          },
+          "servicesCountries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ServicesCountries"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ServicesCountries": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idService": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idCountry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idCountryNavigation": {
+            "$ref": "#/components/schemas/Countries"
+          },
+          "idServiceNavigation": {
+            "$ref": "#/components/schemas/Services"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

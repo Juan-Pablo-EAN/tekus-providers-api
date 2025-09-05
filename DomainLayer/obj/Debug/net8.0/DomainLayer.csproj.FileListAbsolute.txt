@@ -1,0 +1,16 @@
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\bin\Debug\net8.0\DomainLayer.deps.json
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\bin\Debug\net8.0\DomainLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\bin\Debug\net8.0\DomainLayer.pdb
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.AssemblyInfoInputs.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.AssemblyInfo.cs
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.csproj.CoreCompileInputs.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.sourcelink.json
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\refint\DomainLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.pdb
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\ref\DomainLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\bin\Debug\net8.0\InfraLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\bin\Debug\net8.0\InfraLayer.pdb
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLayer.csproj.AssemblyReference.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\DomainLayer\obj\Debug\net8.0\DomainLa.5E103439.Up2Date

@@ -1,0 +1,32 @@
+[
+  {
+    "ContainingType": "TekusProvidersAPI.Controllers.CountriesController",
+    "Method": "SyncCountriesList",
+    "RelativePath": "api/Countries/SyncCountriesList",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TekusProvidersAPI.Controllers.ProvidersController",
+    "Method": "GetProviders",
+    "RelativePath": "GetProviders",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[InfraLayer.Models.Providers, InfraLayer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  }
+]
