@@ -1,4 +1,5 @@
-﻿using InfraLayer.Models;
+﻿using DomainLayer.DTOs;
+using InfraLayer.Models;
 
 namespace DomainLayer.Interfaces
 {
@@ -9,7 +10,7 @@ namespace DomainLayer.Interfaces
         /// </summary>
         /// <returns>Lista de proveedores</returns>
         public Task<List<Providers>> GetProvidersList();
-
+        public Task<List<CompleteProviderDto>> GetCompleteProvidersListAsync();
         /// <summary>
         /// Crea un nuevo proveedor en la base de datos
         /// </summary>

@@ -24,22 +24,47 @@ namespace TekusProvidersAPI.Controllers
         }
 
         /// <summary>
-        /// Obtiene una lista de los proveedores
+        /// Obtiene una lista de la información básica de los proveedores
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
+        /// <returns>Lista básica de proveedores</returns>
         [HttpGet("[action]")]
-        public async Task<List<Providers>> GetProviders()
+        public async Task<ActionResult<List<Providers>>> GetProviders()
         {
             try
             {
-                return await _providersCore.GetProvidersList();
+                var result = await _providersCore.GetProvidersList();
+                return Ok(result);
             }
             catch (Exception e)
             {
                 string message = "Ocurrió un error al obtener los proveedores";
                 _logger.LogError(e, "{Message} - {Method} - {ExceptionMessage}", message, nameof(GetProviders), e.Message);
-                throw new InvalidOperationException(e.Message, e);
+                return StatusCode(500, new { error = message });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene una lista completa de los proveedores, incluyendo sus servicios, países y campos personalizados
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("[action]")]
+        public async Task<ActionResult<List<CompleteProviderDto>>> GetCompleteProviders()
+        {
+            try
+            {
+                _logger.LogInformation("Solicitud de información completa de proveedores recibida");
+
+                var result = await _providersCore.GetCompleteProvidersListAsync();
+
+                _logger.LogInformation($"Respuesta exitosa: {result.Count} proveedores con información completa");
+
+                return Ok(result);
+            }
+            catch (Exception e)
+            {
+                string message = "Ocurrió un error al obtener la información completa de proveedores";
+                _logger.LogError(e, "{Message} - {Method} - {ExceptionMessage}", message, nameof(GetCompleteProviders), e.Message);
+                return StatusCode(500, new { error = message, details = e.Message });
             }
         }
 
@@ -68,8 +93,8 @@ namespace TekusProvidersAPI.Controllers
             catch (Exception e)
             {
                 string message = "Ocurrió un error al crear proveedor";
-                _logger.LogError(e, "{Message} - {Method} - {ExceptionMessage}", message, nameof(GetProviders), e.Message);
-                throw new InvalidOperationException(e.Message, e);
+                _logger.LogError(e, "{Message} - {Method} - {ExceptionMessage}", message, nameof(CreateNewProvider), e.Message);
+                return Utilities.SetFormatResponse($"{message}: {e.Message}", false);
             }
         }
 
