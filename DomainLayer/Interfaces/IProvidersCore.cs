@@ -16,7 +16,7 @@ namespace DomainLayer.Interfaces
         /// </summary>
         /// <param name="provider">Objeto proveedor a crear</param>
         /// <returns>Retorna "OK" si la operación fue exitosa</returns>
-        public Task<string> CreateNewProvider(Providers provider);
+        public Task<string> CreateNewProvider(CompleteProviderDto provider);
 
         /// <summary>
         /// Actualiza un proveedor existente en la base de datos junto con sus campos personalizados

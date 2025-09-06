@@ -24,6 +24,8 @@ namespace TekusProvidersAPI.Controllers
             _syncCountries = new SyncCountries(_context, countriesService, logger, httpClient);
         }
 
+        
+
         /// <summary>
         /// Sincroniza la lista de países con una fuente externa
         /// </summary>
@@ -40,6 +42,25 @@ namespace TekusProvidersAPI.Controllers
             {
                 _logger.LogError(e, $"{nameof(SyncCountriesList)} - Error al sincronizar la lista de países: {e.Message}");
                 return StatusCode(500, new { error = "Error interno del servidor durante la sincronización" });
+            }
+        }
+
+        /// <summary>
+        /// Obtiene la lista de países almacenados en la base de datos
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        [HttpGet("[action]")]
+        public List<Countries> GetCountriesFromDb()
+        {
+            try
+            {
+                List<Countries> response = _syncCountries.GetCountriesFromDb();
+                return response;
+            } catch(Exception e)
+            {
+                _logger.LogError(e, $"{nameof(GetCountriesFromDb)} - Error al obtener la lista de países: {e.Message}");
+                throw new InvalidOperationException(e.Message);
             }
         }
     }

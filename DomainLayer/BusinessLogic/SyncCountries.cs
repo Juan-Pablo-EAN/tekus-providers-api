@@ -161,5 +161,25 @@ namespace DomainLayer.BusinessLogic
                 throw;
             }
         }
+
+
+        /// <summary>
+        /// Obtiene la lista de países almacenados en la base de datos
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public List<Countries> GetCountriesFromDb()
+        {
+            try
+            {
+                var response = _context.Countries.OrderBy(c => c.Name).ToList();
+                return response;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error al obtener países desde la base de datos");
+                throw new InvalidOperationException(e.Message);
+            }
+        }
     }
 }

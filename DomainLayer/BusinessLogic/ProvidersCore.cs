@@ -68,7 +68,7 @@ namespace DomainLayer.BusinessLogic
                                     Name = sc.IdCountryNavigation.Name,
                                     FlagImage = sc.IdCountryNavigation.FlagImage
                                 })
-                                .Distinct() 
+                                .Distinct()
                                 .OrderBy(c => c.Name) // Ordenar por nombre de país
                                 .ToList()
                         })
@@ -110,39 +110,147 @@ namespace DomainLayer.BusinessLogic
         }
 
         /// <summary>
-        /// Metodo para crear un nuevo proveedor en base de datos
+        /// Método para crear un nuevo proveedor completo en base de datos
+        /// Incluye: Proveedor, CustomFields, Services con Countries relacionados
         /// </summary>
-        /// <param name="provider">Objeto proveedor a crear</param>
+        /// <param name="provider">Objeto proveedor completo a crear</param>
         /// <returns>Retorna "OK" si la operación fue exitosa</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<string> CreateNewProvider(Providers provider)
+        public async Task<string> CreateNewProvider(CompleteProviderDto provider)
         {
             try
             {
-                string response = string.Empty;
+                _logger.LogInformation($"Iniciando creación de proveedor completo: {provider.Name}");
 
-                //Se guardan los datos del proveedor en la tabla Providers y en la tabla CustomFields ya que ambas tablas tienen relación
-                await _context.Providers.AddAsync(provider);
-
-                int result = await _context.SaveChangesAsync();
-
-                if (result > 0)
+                try
                 {
-                    response = "OK";
-                    _logger.LogInformation($"Nuevo proveedor creado con éxito.");
-                }
-                else
-                {
-                    response = "Error al crear el nuevo proveedor";
-                    _logger.LogWarning(response);
-                }
+                    // 1. Crear el proveedor principal
+                    var newProvider = new Providers
+                    {
+                        Nit = provider.Nit,
+                        Name = provider.Name,
+                        Email = provider.Email
+                    };
 
-                return response;
+                    await _context.Providers.AddAsync(newProvider);
+                    await _context.SaveChangesAsync(); // Guardar para obtener el ID del proveedor
+
+                    int providerId = newProvider.Id;
+                    _logger.LogDebug($"Proveedor creado con ID: {providerId}");
+
+                    // 2. Procesar CustomFields
+                    if (provider.CustomFields?.Any() == true)
+                    {
+                        await ProcessCustomFields(provider.CustomFields, providerId);
+                        _logger.LogDebug($"Procesados {provider.CustomFields.Count} campos personalizados");
+                    }
+
+                    // 3. Procesar Services con sus Countries
+                    if (provider.Services?.Any() == true)
+                    {
+                        await ProcessServicesWithCountries(provider.Services, providerId);
+                        _logger.LogDebug($"Procesados {provider.Services.Count} servicios");
+                    }
+
+                    // Guardar todos los cambios restantes
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation($"Proveedor completo creado exitosamente: ID={providerId}, " +
+                                         $"CustomFields={provider.CustomFields?.Count ?? 0}, " +
+                                         $"Services={provider.Services?.Count ?? 0}");
+
+                    return "OK";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error en transacción, realizando rollback");
+                    throw;
+                }
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error al crear un nuevo proveedor");
+                _logger.LogError(e, "Error al crear un nuevo proveedor completo");
                 throw new InvalidOperationException(e.Message, e);
+            }
+        }
+
+        /// <summary>
+        /// Procesa los campos personalizados del proveedor
+        /// </summary>
+        /// <param name="customFields">Lista de campos personalizados</param>
+        /// <param name="providerId">ID del proveedor</param>
+        private async Task ProcessCustomFields(List<CustomFieldCompleteDto> customFields, int providerId)
+        {
+            var customFieldsToAdd = customFields.Select(cf => new CustomFields
+            {
+                IdProvider = providerId,
+                FieldName = cf.FieldName,
+                FieldValue = cf.FieldValue
+            }).ToList();
+
+            await _context.CustomFields.AddRangeAsync(customFieldsToAdd);
+        }
+
+        /// <summary>
+        /// Procesa los servicios y sus países relacionados
+        /// </summary>
+        /// <param name="services">Lista de servicios del proveedor</param>
+        /// <param name="providerId">ID del proveedor</param>
+        private async Task ProcessServicesWithCountries(List<ServiceCompleteDto> services, int providerId)
+        {
+            foreach (var serviceDto in services)
+            {
+                int serviceId;
+
+                // Crear nuevo servicio
+                var newService = new Services
+                {
+                    Name = serviceDto.Name,
+                    ValuePerHourUsd = serviceDto.ValuePerHourUsd
+                };
+
+                await _context.Services.AddAsync(newService);
+                await _context.SaveChangesAsync(); // Guardar para obtener el ID
+
+                serviceId = newService.Id;
+                _logger.LogDebug($"Nuevo servicio creado: {serviceDto.Name} con ID: {serviceId}");
+
+
+                // 2. Crear relación ProvidersServices
+                var providerService = new ProvidersServices
+                {
+                    IdProvider = providerId,
+                    IdService = serviceId
+                };
+
+                await _context.ProvidersServices.AddAsync(providerService);
+
+                // 3. Procesar países del servicio
+                if (serviceDto.Countries?.Any() == true)
+                {
+                    await ProcessServiceCountries(serviceDto.Countries, serviceId);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Procesa los países relacionados a un servicio
+        /// </summary>
+        /// <param name="countries">Lista de países</param>
+        /// <param name="serviceId">ID del servicio</param>
+        private async Task ProcessServiceCountries(List<CountryCompleteDto> countries, int serviceId)
+        {
+            foreach (var countryDto in countries)
+            {
+                // Crear relación ServicesCountries
+                var serviceCountry = new ServicesCountries
+                {
+                    IdService = serviceId,
+                    IdCountry = countryDto.Id
+                };
+
+                await _context.ServicesCountries.AddAsync(serviceCountry);
+                _logger.LogDebug($"Relación servicio-país creada: ServiceID={serviceId}, CountryID={countryDto.Id}");
             }
         }
 
@@ -213,7 +321,7 @@ namespace DomainLayer.BusinessLogic
                 {
                     List<Services> listServices = new();
 
-                    foreach(ProvidersServices provService in provider.ProvidersServices)
+                    foreach (ProvidersServices provService in provider.ProvidersServices)
                     {
                         //busca los servicios relacionados al proveedor
                         var service = _context.Services.Where(s => s.Id == provService.IdService);
@@ -231,7 +339,8 @@ namespace DomainLayer.BusinessLogic
                     int result = await _context.SaveChangesAsync();
 
                     return (result > 0) ? "OK" : "Ocurrió un error al elimninar el proveedor";
-                } else
+                }
+                else
                 {
                     return "No se encontró el proveedor";
                 }
