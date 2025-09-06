@@ -68,7 +68,7 @@ namespace TekusProvidersAPI.Controllers
 
             try
             {
-                Services request = JsonConvert.DeserializeObject<Services>(requestService.ObjectRequest)!;
+                ServiceCompleteDto request = JsonConvert.DeserializeObject<ServiceCompleteDto>(requestService.ObjectRequest)!;
                 
                 string response = await _servicesCore.UpdateService(request);
 

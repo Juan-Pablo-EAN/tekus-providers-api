@@ -54,37 +54,65 @@ namespace DomainLayer.BusinessLogic
         }
 
         /// <summary>
-        /// Actualiza la información de un servicio junto con su proveedor y países relacionados
+        /// Actualiza la información de un servicio junto con sus países relacionados
+        /// Incluye lógica completa para actualizar servicio y gestionar países asociados
         /// </summary>
-        /// <param name="service"></param>
-        /// <returns></returns>
+        /// <param name="service">Objeto servicio completo con los datos actualizados</param>
+        /// <returns>Retorna "OK" si la operación fue exitosa</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<string> UpdateService(Services service)
+        public async Task<string> UpdateService(ServiceCompleteDto service)
         {
             try
-            {
-                var existingService = await _context.Services
-                .Include(s => s.ProvidersServices)
-                 .Include(s => s.ServicesCountries)
-                .FirstOrDefaultAsync(s => s.Id == service.Id);
-
-                existingService!.Name = service.Name;
-                existingService!.ValuePerHourUsd = service.ValuePerHourUsd;
-                existingService!.ProvidersServices = service.ProvidersServices;
-                existingService!.ServicesCountries = service.ServicesCountries;
-
-                int result = await _context.SaveChangesAsync();
-
-                if (result > 0)
+            {                
+                try
                 {
-                    _logger.LogInformation($"Se ha actualizado el servicio con ID {service.Id} exitosamente");
-                    return "OK";
+                    var existingService = await _context.Services
+                        .Include(s => s.ServicesCountries)
+                            .ThenInclude(sc => sc.IdCountryNavigation)
+                        .FirstOrDefaultAsync(s => s.Id == service.Id);
+
+                    if (existingService == null)
+                    {
+                        string notFoundMsg = "Servicio no encontrado";
+                        _logger.LogWarning($"El servicio con ID {service.Id} no existe");
+                        return notFoundMsg;
+                    }
+
+                    bool serviceChanged = false;
+                    if (existingService.Name != service.Name)
+                    {
+                        existingService.Name = service.Name;
+                        serviceChanged = true;
+                    }
+                    if (existingService.ValuePerHourUsd != service.ValuePerHourUsd)
+                    {
+                        existingService.ValuePerHourUsd = service.ValuePerHourUsd;
+                        serviceChanged = true;
+                    }
+
+                    // Actualiza países relacionados del servicio
+                    await UpdateServiceCountries(existingService, service.Countries ?? new List<CountryCompleteDto>());
+
+                    // Guarda todos los cambios
+                    int result = await _context.SaveChangesAsync();
+
+                    if (result > 0 || serviceChanged)
+                    {
+                        _logger.LogInformation($"Servicio actualizado exitosamente: ID={service.Id}, " +
+                                             $"Countries procesados={service.Countries?.Count ?? 0}");
+                        return "OK";
+                    }
+                    else
+                    {
+                        string noChangesMsg = $"No hubo cambios para el servicio con ID: {service.Id}";
+                        _logger.LogInformation(noChangesMsg);
+                        return noChangesMsg;
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    string response = $"No hubo cambios para el servicio con ID: {service.Id}";
-                    _logger.LogInformation(response);
-                    return response;
+                    _logger.LogError(ex, "Error en transacción de actualización, realizando rollback");
+                    throw;
                 }
             }
             catch (Exception e)
@@ -93,6 +121,72 @@ namespace DomainLayer.BusinessLogic
                 _logger.LogError(e, response);
                 throw new InvalidOperationException(e.Message, e);
             }
+        }
+
+        /// <summary>
+        /// Actualiza los países relacionados a un servicio de manera inteligente
+        /// Maneja: actualización de países existentes, eliminación de faltantes y creación de nuevos países y relaciones
+        /// </summary>
+        /// <param name="existingService">Servicio existente con sus ServicesCountries cargados</param>
+        /// <param name="newCountries">Lista nueva de países desde el cliente</param>
+        private async Task UpdateServiceCountries(Services existingService, List<CountryCompleteDto> newCountries)
+        {
+            var existingServiceCountries = existingService.ServicesCountries.ToList();
+            
+            // Eliminar relaciones ServicesCountries que ya no están en la nueva lista
+            var relationsToRemove = existingServiceCountries
+                .Where(existing => !newCountries.Any(newCountry => 
+                    newCountry.Id > 0 && newCountry.Id == existing.IdCountry))
+                .ToList();
+
+            if (relationsToRemove.Any())
+            {
+                _context.ServicesCountries.RemoveRange(relationsToRemove);
+                _logger.LogDebug($"Relaciones a eliminar: {relationsToRemove.Count}");
+            }
+
+            foreach (var newCountry in newCountries)
+            {
+                int countryId = newCountry.Id;
+
+                var existingRelation = existingServiceCountries
+                    .FirstOrDefault(sc => sc.IdCountry == countryId);
+
+                if (existingRelation == null)
+                {
+                    var newServiceCountry = new ServicesCountries
+                    {
+                        IdService = existingService.Id,
+                        IdCountry = countryId
+                    };
+
+                    await _context.ServicesCountries.AddAsync(newServiceCountry);
+                    _logger.LogDebug($"Nueva relación servicio-país creada: ServiceID={existingService.Id}, CountryID={countryId}");
+                }
+            }
+            
+            _logger.LogDebug($"Procesamiento de ServiceCountries completado");
+        }
+
+        /// <summary>
+        /// Crea un nuevo país en la base de datos
+        /// </summary>
+        /// <param name="countryDto">Datos del país a crear</param>
+        /// <returns>ID del país creado</returns>
+        private async Task<int> CreateNewCountry(CountryCompleteDto countryDto)
+        {
+            var newCountry = new Countries
+            {
+                Isocode = countryDto.Isocode,
+                Name = countryDto.Name,
+                FlagImage = countryDto.FlagImage
+            };
+
+            await _context.Countries.AddAsync(newCountry);
+            await _context.SaveChangesAsync(); // Guardar para obtener el ID
+
+            _logger.LogDebug($"Nuevo país creado: {countryDto.Name} ({countryDto.Isocode}) con ID: {newCountry.Id}");
+            return newCountry.Id;
         }
 
         /// <summary>
