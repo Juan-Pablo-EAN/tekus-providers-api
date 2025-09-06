@@ -124,7 +124,6 @@ namespace DomainLayer.BusinessLogic
 
                 try
                 {
-                    // 1. Crear el proveedor principal
                     var newProvider = new Providers
                     {
                         Nit = provider.Nit,
@@ -138,14 +137,12 @@ namespace DomainLayer.BusinessLogic
                     int providerId = newProvider.Id;
                     _logger.LogDebug($"Proveedor creado con ID: {providerId}");
 
-                    // 2. Procesar CustomFields
                     if (provider.CustomFields?.Any() == true)
                     {
                         await ProcessCustomFields(provider.CustomFields, providerId);
                         _logger.LogDebug($"Procesados {provider.CustomFields.Count} campos personalizados");
                     }
 
-                    // 3. Procesar Services con sus Countries
                     if (provider.Services?.Any() == true)
                     {
                         await ProcessServicesWithCountries(provider.Services, providerId);
@@ -202,7 +199,6 @@ namespace DomainLayer.BusinessLogic
             {
                 int serviceId;
 
-                // Crear nuevo servicio
                 var newService = new Services
                 {
                     Name = serviceDto.Name,
@@ -216,7 +212,6 @@ namespace DomainLayer.BusinessLogic
                 _logger.LogDebug($"Nuevo servicio creado: {serviceDto.Name} con ID: {serviceId}");
 
 
-                // 2. Crear relación ProvidersServices
                 var providerService = new ProvidersServices
                 {
                     IdProvider = providerId,
@@ -225,7 +220,6 @@ namespace DomainLayer.BusinessLogic
 
                 await _context.ProvidersServices.AddAsync(providerService);
 
-                // 3. Procesar países del servicio
                 if (serviceDto.Countries?.Any() == true)
                 {
                     await ProcessServiceCountries(serviceDto.Countries, serviceId);
@@ -242,7 +236,6 @@ namespace DomainLayer.BusinessLogic
         {
             foreach (var countryDto in countries)
             {
-                // Crear relación ServicesCountries
                 var serviceCountry = new ServicesCountries
                 {
                     IdService = serviceId,
@@ -255,45 +248,70 @@ namespace DomainLayer.BusinessLogic
         }
 
         /// <summary>
-        /// Metodo para actualizar un proveedor existente en base de datos junto con sus campos personalizados
+        /// Método para actualizar un proveedor existente en base de datos junto con sus campos personalizados
+        /// Incluye lógica completa para: actualizar, agregar y eliminar CustomFields
         /// </summary>
-        /// <param name="provider">Objeto proveedor con los datos actualizados</param>
+        /// <param name="provider">Objeto proveedor completo con los datos actualizados</param>
         /// <returns>Retorna "OK" si la operación fue exitosa</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public async Task<string> UpdateProvider(Providers provider)
+        public async Task<string> UpdateProvider(CompleteProviderDto provider)
         {
             try
             {
-                string response = string.Empty;
-
-                var existingProvider = await _context.Providers
-                    .FirstOrDefaultAsync(p => p.Id == provider.Id);
-
-                if (existingProvider == null)
+                _logger.LogInformation($"Iniciando actualización de proveedor: {provider.Name} (ID: {provider.Id})");
+                
+                try
                 {
-                    response = "Proveedor no encontrado";
-                    _logger.LogWarning($"El proveedor con ID {provider.Id} no existe");
-                    return response;
+                    var existingProvider = await _context.Providers
+                        .Include(p => p.CustomFields)
+                        .FirstOrDefaultAsync(p => p.Id == provider.Id);
+
+                    if (existingProvider == null)
+                    {
+                        string notFoundMsg = "Proveedor no encontrado";
+                        _logger.LogWarning($"El proveedor con ID {provider.Id} no existe");
+                        return notFoundMsg;
+                    }
+
+                    bool providerChanged = false;
+                    if (existingProvider.Nit != provider.Nit)
+                    {
+                        existingProvider.Nit = provider.Nit;
+                        providerChanged = true;
+                    }
+                    if (existingProvider.Name != provider.Name)
+                    {
+                        existingProvider.Name = provider.Name;
+                        providerChanged = true;
+                    }
+                    if (existingProvider.Email != provider.Email)
+                    {
+                        existingProvider.Email = provider.Email;
+                        providerChanged = true;
+                    }
+
+                    await UpdateCustomFields(existingProvider, provider.CustomFields ?? new List<CustomFieldCompleteDto>());
+
+                    int result = await _context.SaveChangesAsync(); //Se guardan todos los cambios
+
+                    if (result > 0 || providerChanged)
+                    {
+                        _logger.LogInformation($"Proveedor actualizado exitosamente: ID={provider.Id}, " +
+                                             $"CustomFields procesados={provider.CustomFields?.Count ?? 0}");
+                        return "OK";
+                    }
+                    else
+                    {
+                        string noChangesMsg = $"No hubo cambios para el proveedor con ID: {provider.Id}";
+                        _logger.LogInformation(noChangesMsg);
+                        return noChangesMsg;
+                    }
                 }
-
-                // Actualizar los datos básicos del proveedor
-                existingProvider.Nit = provider.Nit;
-                existingProvider.Name = provider.Name;
-                existingProvider.Email = provider.Email;
-                int result = await _context.SaveChangesAsync();
-
-                if (result > 0)
+                catch (Exception ex)
                 {
-                    response = "OK";
-                    _logger.LogInformation("Proveedor actualizado con éxito");
+                    _logger.LogError(ex, "Error en transacción de actualización, realizando rollback");
+                    throw;
                 }
-                else
-                {
-                    response = $"No hubo cambios para el proveedor con ID: {provider.Id}";
-                    _logger.LogInformation(response);
-                }
-
-                return response;
             }
             catch (Exception e)
             {
@@ -303,48 +321,121 @@ namespace DomainLayer.BusinessLogic
         }
 
         /// <summary>
-        /// Elimina el proveedor junto con sus servicios y campos personalizados
+        /// Actualiza los CustomFields de un proveedor de manera inteligente
+        /// Maneja: actualización de existentes, eliminación de faltantes y creación de nuevos
         /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
+        /// <param name="existingProvider">Proveedor existente con sus CustomFields cargados</param>
+        /// <param name="newCustomFields">Lista nueva de CustomFields desde el cliente</param>
+        private async Task UpdateCustomFields(Providers existingProvider, List<CustomFieldCompleteDto> newCustomFields)
+        {
+            var existingFields = existingProvider.CustomFields.ToList();
+            
+            _logger.LogDebug($"CustomFields - Existentes: {existingFields.Count}, Nuevos: {newCustomFields.Count}");
+
+            // Elimina campos que ya no están en la nueva lista
+            var fieldsToRemove = existingFields
+                .Where(existing => !newCustomFields.Any(newField => 
+                    newField.Id > 0 && newField.Id == existing.Id))
+                .ToList();
+
+            if (fieldsToRemove.Any())
+            {
+                _context.CustomFields.RemoveRange(fieldsToRemove);
+            }
+
+            foreach (var newField in newCustomFields)
+            {
+                if (newField.Id > 0) //Si existe el campo se actualiza
+                {
+                    var existingField = existingFields.FirstOrDefault(ef => ef.Id == newField.Id);
+                    if (existingField != null)
+                    {
+                        if (existingField.FieldName != newField.FieldName)
+                        {
+                            existingField.FieldName = newField.FieldName;
+                        }
+                        
+                        if (existingField.FieldValue != newField.FieldValue)
+                        {
+                            existingField.FieldValue = newField.FieldValue;
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Campo con ID {newField.Id} no encontrado para actualizar");
+                    }
+                }
+                else
+                {
+                    var newCustomField = new CustomFields
+                    {
+                        IdProvider = existingProvider.Id,
+                        FieldName = newField.FieldName,
+                        FieldValue = newField.FieldValue
+                    };
+
+                    await _context.CustomFields.AddAsync(newCustomField);
+                    _logger.LogDebug($"Agregando nuevo campo: {newField.FieldName}");
+                }
+            }
+            
+            _logger.LogDebug($"Procesamiento de CustomFields completado");
+        }
+
+        /// <summary>
+        /// Elimina un proveedor de la base de datos junto con sus relaciones
+        /// </summary>
+        /// <param name="id">ID del proveedor a eliminar</param>
+        /// <returns>Retorna "OK" si la operación fue exitosa</returns>
         /// <exception cref="InvalidOperationException"></exception>
         public async Task<string> DeleteProvider(int id)
         {
             try
             {
+                _logger.LogInformation($"Iniciando eliminación del proveedor con ID: {id}");
+
                 var provider = await _context.Providers
                     .Include(p => p.CustomFields)
                     .Include(p => p.ProvidersServices)
                     .FirstOrDefaultAsync(p => p.Id == id);
 
-                if (provider != null)
+                if (provider == null)
                 {
-                    List<Services> listServices = new();
+                    string notFoundMsg = "Proveedor no encontrado";
+                    _logger.LogWarning($"El proveedor con ID {id} no existe");
+                    return notFoundMsg;
+                }
 
-                    foreach (ProvidersServices provService in provider.ProvidersServices)
-                    {
-                        //busca los servicios relacionados al proveedor
-                        var service = _context.Services.Where(s => s.Id == provService.IdService);
-                        listServices.Add((Services)service);
-                    }
+                // Eliminar campos personalizados
+                if (provider.CustomFields.Any())
+                {
+                    _context.CustomFields.RemoveRange(provider.CustomFields);
+                    _logger.LogDebug($"Eliminando {provider.CustomFields.Count} campos personalizados");
+                }
 
-                    if (listServices.Count > 0)
-                        _context.RemoveRange(listServices); //elimina los servicios
+                // Eliminar relaciones ProvidersServices (no los Services)
+                if (provider.ProvidersServices.Any())
+                {
+                    _context.ProvidersServices.RemoveRange(provider.ProvidersServices);
+                    _logger.LogDebug($"Eliminando {provider.ProvidersServices.Count} relaciones proveedor-servicio");
+                }
 
-                    if (provider.CustomFields.Count > 0)
-                        _context.RemoveRange(provider.CustomFields); //elimina los campos personalizados
+                // Eliminar el proveedor
+                _context.Providers.Remove(provider);
 
-                    _context.Providers.Remove(provider); //elimna el proveedor
+                int result = await _context.SaveChangesAsync();
 
-                    int result = await _context.SaveChangesAsync();
-
-                    return (result > 0) ? "OK" : "Ocurrió un error al elimninar el proveedor";
+                if (result > 0)
+                {
+                    _logger.LogInformation($"Proveedor eliminado exitosamente: ID={id}, Nombre={provider.Name}");
+                    return "OK";
                 }
                 else
                 {
-                    return "No se encontró el proveedor";
+                    string errorMsg = "Ocurrió un error al eliminar el proveedor";
+                    _logger.LogError(errorMsg);
+                    return errorMsg;
                 }
-
             }
             catch (Exception e)
             {

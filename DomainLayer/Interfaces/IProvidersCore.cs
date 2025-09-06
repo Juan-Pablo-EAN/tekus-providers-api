@@ -10,26 +10,30 @@ namespace DomainLayer.Interfaces
         /// </summary>
         /// <returns>Lista de proveedores</returns>
         public Task<List<Providers>> GetProvidersList();
+        /// <summary>
+        /// Obtiene la lista completa de proveedores con toda la información relacionada
+        /// </summary>
+        /// <returns>Lista completa de proveedores con detalles</returns>
         public Task<List<CompleteProviderDto>> GetCompleteProvidersListAsync();
         /// <summary>
-        /// Crea un nuevo proveedor en la base de datos
+        /// Crea un nuevo proveedor completo en la base de datos
         /// </summary>
-        /// <param name="provider">Objeto proveedor a crear</param>
+        /// <param name="provider">Objeto proveedor completo a crear</param>
         /// <returns>Retorna "OK" si la operación fue exitosa</returns>
         public Task<string> CreateNewProvider(CompleteProviderDto provider);
 
         /// <summary>
         /// Actualiza un proveedor existente en la base de datos junto con sus campos personalizados
         /// </summary>
-        /// <param name="provider">Objeto proveedor con los datos actualizados</param>
+        /// <param name="provider">Objeto proveedor completo con los datos actualizados</param>
         /// <returns>Retorna "OK" si la operación fue exitosa</returns>
-        public Task<string> UpdateProvider(Providers provider);
+        public Task<string> UpdateProvider(CompleteProviderDto provider);
 
         /// <summary>
-        /// Elimina el proveedor junto con sus servicios y campos personalizados
+        /// Elimina un proveedor de la base de datos junto con sus relaciones
         /// </summary>
-        /// <param name="id">Id del proveedor</param>
-        /// <returns></returns>
+        /// <param name="id">ID del proveedor a eliminar</param>
+        /// <returns>Retorna "OK" si la operación fue exitosa</returns>
         public Task<string> DeleteProvider(int id);
 
     }

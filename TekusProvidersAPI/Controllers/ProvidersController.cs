@@ -112,7 +112,7 @@ namespace TekusProvidersAPI.Controllers
 
             try
             {
-                Providers request = JsonConvert.DeserializeObject<Providers>(requestProvider.ObjectRequest)!;
+                CompleteProviderDto request = JsonConvert.DeserializeObject<CompleteProviderDto>(requestProvider.ObjectRequest)!;
                 string response = await _providersCore.UpdateProvider(request);
 
                 return (response.Contains("OK")) ? Utilities.SetFormatResponse("Proveedor actualizado exitosamente", true)
