@@ -30,12 +30,24 @@ builder.Services.AddDbContextPool<TekusProvidersContext>(options =>
     });
 });
 
-builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", builder =>
+builder.Services.AddCors(options => options.AddPolicy("CorsPolicy", corsBuilder =>
 {
-    builder.WithOrigins("http://localhost:4200")
-           .WithMethods("GET", "POST", "PUT", "DELETE")
-           .WithHeaders("Authorization", "Content-Type")
-           .AllowCredentials();
+    if (builder.Environment.IsDevelopment())
+    {
+        // En desarrollo
+        corsBuilder.WithOrigins("http://localhost:4200", "https://localhost:4200")
+                   .AllowCredentials();
+    }
+    else
+    {
+        // En producción
+        corsBuilder.AllowAnyOrigin()
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();    }
+    
+    // Configuración común para ambos entornos
+    corsBuilder.WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+               .WithHeaders("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With");
 }));
 
 builder.Services.AddHttpClient();
