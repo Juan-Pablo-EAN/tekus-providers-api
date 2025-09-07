@@ -1,10 +1,9 @@
-using Xunit;
-using UnitTestProject.DataBaseMock;
-using InfraLayer.Models;
-using Microsoft.Extensions.Logging;
 using DomainLayer.BusinessLogic;
 using DomainLayer.DTOs;
+using InfraLayer.Models;
+using Microsoft.Extensions.Logging;
 using Moq;
+using UnitTestProject.DataBaseMock;
 
 namespace UnitTestProject.BusinessLogic
 {

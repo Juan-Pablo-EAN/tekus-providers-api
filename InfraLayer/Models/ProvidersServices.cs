@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace InfraLayer.Models;
+﻿namespace InfraLayer.Models;
 
 public partial class ProvidersServices
 {

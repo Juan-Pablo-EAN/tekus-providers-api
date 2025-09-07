@@ -1,11 +1,10 @@
-using Xunit;
-using UnitTestProject.DataBaseMock;
-using TekusProvidersAPI.Controllers;
-using Microsoft.Extensions.Logging;
 using DomainLayer.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using TekusProvidersAPI.Controllers;
+using UnitTestProject.DataBaseMock;
 
 namespace UnitTestProject.Controllers
 {

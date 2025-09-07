@@ -1,6 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using InfraLayer.Models;
-using System.Collections.Concurrent;
+﻿using InfraLayer.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace UnitTestProject.DataBaseMock
 {
