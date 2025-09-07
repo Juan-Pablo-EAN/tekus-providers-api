@@ -8,9 +8,17 @@ builder.Services.Configure<CountriesServiceConfig>(builder.Configuration.GetSect
 
 builder.Services.AddDbContextPool<TekusProvidersContext>(options =>
 {
-    string connectionString = builder.Configuration.GetConnectionString("DataBase:ConnectionString") ??
-                             builder.Configuration["DataBase:ConnectionString"] ??
-                             throw new InvalidOperationException("Connection string 'DataBase:ConnectionString' not found.");
+    string connectionString; // Se obtiene la cadena de conexión según el entorno
+
+#if DEBUG
+    connectionString = builder.Configuration.GetConnectionString("DataBase:ConnectionString") ??
+                            builder.Configuration["DataBase:ConnectionString"] ??
+                            throw new InvalidOperationException("Connection string 'DataBase:ConnectionString' not found.");
+#else
+         connectionString = Environment.GetEnvironmentVariable("DbConnection");
+#endif
+
+
     options.UseSqlServer(connectionString, sqlOptions =>
     {
         sqlOptions.CommandTimeout(60); // Tiempo máximo de espera para comandos SQL (segundos).
