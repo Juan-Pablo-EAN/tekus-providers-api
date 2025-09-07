@@ -3,3 +3,16 @@
 ################################################################################
 
 /.vs/TekusProvidersAPI
+/.vs/CopilotSnapshots/94BCF87B176B4546874B66696891F9A4
+/DomainLayer/bin/Debug/net8.0
+/InfraLayer/bin/Debug/net8.0
+/TekusProvidersAPI/bin/Debug/net8.0
+/.vs/ProjectEvaluation
+/DomainLayer/bin
+/InfraLayer/bin
+/TekusProvidersAPI/bin
+/DomainLayer/obj
+/InfraLayer/obj
+/TekusProvidersAPI/obj
+/UnitTestProject/bin/Debug/net8.0
+/UnitTestProject/obj

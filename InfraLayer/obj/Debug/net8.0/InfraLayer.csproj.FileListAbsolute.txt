@@ -1,0 +1,15 @@
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\bin\Debug\net8.0\InfraLayer.deps.json
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\bin\Debug\net8.0\InfraLayer.runtimeconfig.json
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\bin\Debug\net8.0\InfraLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\bin\Debug\net8.0\InfraLayer.pdb
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.csproj.AssemblyReference.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.AssemblyInfoInputs.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.AssemblyInfo.cs
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.csproj.CoreCompileInputs.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.sourcelink.json
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\refint\InfraLayer.dll
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.pdb
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\InfraLayer.genruntimeconfig.cache
+C:\Users\jballester21\source\repos\TekusProvidersAPI\InfraLayer\obj\Debug\net8.0\ref\InfraLayer.dll
