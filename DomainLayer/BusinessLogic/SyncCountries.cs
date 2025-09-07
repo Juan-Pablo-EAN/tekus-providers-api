@@ -105,9 +105,6 @@ namespace DomainLayer.BusinessLogic
                         _logger.LogWarning($"País con datos incompletos ignorado: {apiCountry.Name?.Common ?? "Sin nombre"}");
                         continue;
                     }
-
-                    // Convertir el código ISO a bytes para comparar
-                    var isoCodeBytes = Encoding.UTF8.GetBytes(apiCountry.Cca3);
                     
                     // Buscar si el país ya existe en la base de datos
                     var existingCountry = existingCountries.FirstOrDefault(c => 
