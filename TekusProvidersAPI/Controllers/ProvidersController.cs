@@ -14,7 +14,7 @@ namespace TekusProvidersAPI.Controllers
     {
         private readonly TekusProvidersContext _context;
         private readonly ILogger<ProvidersController> _logger;
-        public IProvidersCore _providersCore;
+        private readonly IProvidersCore _providersCore;
 
         public ProvidersController(TekusProvidersContext context, ILogger<ProvidersController> logger)
         {
